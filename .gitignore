@@ -130,3 +130,7 @@ dmypy.json
 
 # DEV folder
 DEV/
+
+# Assignment3 json files
+docLookup.json
+invertedIndex.json
