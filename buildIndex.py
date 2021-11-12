@@ -55,6 +55,7 @@ def main():
                 for element in soup.find_all(tag):
                     if element.string:
                         t = element.string.strip()
+                        t.replace(',', ' ')
                         text += t + ' '
 
             # tokenizing
@@ -63,7 +64,7 @@ def main():
             # removing all tokens that are wholly not alphanumeric
             index = len(raw_tokens) - 1
             while index >= 0:
-                if not raw_tokens[index][0].isalnum():
+                if not raw_tokens[index][0].isalnum() or not raw_tokens[index][-1].isalnum():
                     raw_tokens.pop(index)
                 index -= 1
 
