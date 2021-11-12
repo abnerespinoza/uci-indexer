@@ -130,9 +130,13 @@ dmypy.json
 
 .DS_STORE
 
-# DEV folder
+# extra folders
 DEV/
+raw_indices/
+indices/
 
 # Assignment3 json files
-docLookup.json
-invertedIndex.json
+url_Lookup.ujson
+mem_nu.ujson
+mem_al.ujson
+mem_mz.ujson

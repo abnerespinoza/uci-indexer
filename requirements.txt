@@ -1,2 +1,4 @@
 nltk
 lxml
+ujson
+beautifulsoup4
