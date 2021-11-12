@@ -8,23 +8,36 @@ import nltk
 from bs4 import BeautifulSoup
 from nltk.stem.snowball import SnowballStemmer
 
-
+PARTIAL_INDEX_SIZE = 10000
 # for loop below (for folder_name in folders) raised an error when hidden files' names
 #   were appended to DEV_DIRECTORY. Eg .DS_STORE
-def listdir_nohidden(path):
+def listDirNoHidden(path):
     f_names = []
     for f in os.listdir(path):
         if not f.startswith('.'):
             f_names.append(f)
     return f_names
 
+#invertedIndex is dict[{'docID': 3, 'freq': 120}]
+def savePartialIndex(invertedIndex, filePath): 
+    with open(filePath, 'w') as f:
+        # iterate through sorted keys of inverted index
+        for token in sorted(invertedIndex):
+            # for each token, write in format-- token [Posting]
+            f.write(f'{token} {json.dumps(invertedIndex[token])}')
+    
+def mergePartialIndices(fileNames):
+    # given list of partial indices files, merge into 1 file
+    pass
 
 def main():
     docLookup = dict()
-    invertedIndex = dict()
-    
+    partialInvertedIndex = dict()
+    postingCounter = 0
+    partialIndexCounter = 0
+    partialIndexNames = []
     # extracting folders from DEV
-    folders = listdir_nohidden(DEV_DIRECTORY)
+    folders = listDirNoHidden(DEV_DIRECTORY)
 
     # extracting json files from folders
     json_files = [] 
@@ -88,15 +101,26 @@ def main():
                     'freq': freq
                 }
 
-                if token in invertedIndex:
-                    invertedIndex[token].append(posting)
+                if token in partialInvertedIndex:
+                    partialInvertedIndex[token].append(posting)
+
+                    # checks if partialInvertedIndex is > 100,000
+                    # after saving file, we need to find the file size.
+                    if postingCounter > 100000:
+                        fileName = f'partial_index_{partialIndexCounter}.txt'
+                        savePartialIndex(partialInvertedIndex, fileName)
+                        partialIndexNames.append(fileName)
+                        partialInvertedIndex = {}
+                        partialIndexCounter += 1
+                        
                 else:
-                    invertedIndex[token] = [posting]
+                    partialInvertedIndex[token] = [posting]
+                postingCounter += 1
 
     # save docLookup, invertedIndex
     with open('docLookup.json', 'w') as dl, open('invertedIndex.json', 'w') as ii:
         json.dump(docLookup, dl)
-        json.dump(invertedIndex, ii)
+        json.dump(partialInvertedIndex, ii)
 
 
 if __name__ == '__main__':
