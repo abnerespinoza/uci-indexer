@@ -18,6 +18,11 @@ def listdir_nohidden(path):
             f_names.append(f)
     return f_names
 
+def create_partial_index(invertedIndex, indexNumber):
+    pass
+
+def merge_partial_indexes(indexNumbers):
+    pass
 
 def main():
     docLookup = dict()
@@ -101,8 +106,10 @@ def main():
 if __name__ == '__main__':
     # constant, file path for DEV folder
     DEV_DIRECTORY = 'DEV'
+    # constant, size of partial index
+    BATCH_SIZE = 10000
 
     # uncomment if never used nltk - it's necessary download, else nltk can't tokenize
-    # nltk.download('punkt')
+    nltk.download('punkt')
 
     main()
