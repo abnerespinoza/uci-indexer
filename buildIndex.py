@@ -1,6 +1,5 @@
 # buildIndex.py
 
-
 import os
 import json
 import nltk
@@ -9,8 +8,7 @@ from bs4 import BeautifulSoup
 from nltk.stem.snowball import SnowballStemmer
 
 PARTIAL_INDEX_SIZE = 10000
-PARTIAL_INDEX_DIRECTORY = 'PARTIALS'
-
+PARTIAL_INDEX_FOLDER = 'partial_indices'
 # for loop below (for folder_name in folders) raised an error when hidden files' names
 #   were appended to DEV_DIRECTORY. Eg .DS_STORE
 def listDirNoHidden(path):
@@ -22,7 +20,8 @@ def listDirNoHidden(path):
 
 #invertedIndex is dict[{'docID': 3, 'freq': 120}]
 def savePartialIndex(invertedIndex, filePath): 
-    with open(filePath, 'w') as f:
+    print("creating partial index...")
+    with open(os.path.join(PARTIAL_INDEX_FOLDER, filePath), 'w') as f:
         # iterate through sorted keys of inverted index
         for token in sorted(invertedIndex):
             # for each token, write in format-- token [Posting]
@@ -43,6 +42,7 @@ def main():
 
     # extracting json files from folders
     jsonFiles = [] 
+    fileSizes = 0
     for folder_name in folders:
         files = os.listdir(os.path.join(DEV_DIRECTORY, folder_name))  # json files
 
@@ -53,9 +53,10 @@ def main():
     print(f'Found {len(jsonFiles)} files')    
 
     # create directory to store partial indices
-    if not os.path.exists(PARTIAL_INDEX_DIRECTORY):
-        os.makedirs(PARTIAL_INDEX_DIRECTORY)
+    if not os.path.exists(PARTIAL_INDEX_FOLDER):
+        os.makedirs(PARTIAL_INDEX_FOLDER)
 
+    fileSizes = round(sum(os.path.getsize(file) for file in files)/1024)
     # creating lookup for documents, building inverted index
     for docID, file_path in enumerate(jsonFiles):
         with open(file_path, 'r',  encoding="utf-8") as f:
@@ -114,11 +115,12 @@ def main():
                     # checks if partialInvertedIndex is > 100,000
                     # after saving file, we need to find the file size.
                     if postingCounter > 100000:
-                        fileName = os.path.join(PARTIAL_INDEX_DIRECTORY, f'partial_index_{partialIndexCounter}.txt')
+                        fileName = os.path.join(PARTIAL_INDEX_FOLDER, f'partial_index_{partialIndexCounter}.txt')
                         savePartialIndex(partialInvertedIndex, fileName)
                         partialIndexNames.append(fileName)
-                        partialInvertedIndex = {}
+                        partialInvertedIndex = dict()
                         partialIndexCounter += 1
+                        postingCounter = 0
                         
                 else:
                     partialInvertedIndex[token] = [posting]
@@ -137,6 +139,6 @@ if __name__ == '__main__':
     BATCH_SIZE = 10000
 
     # uncomment if never used nltk - it's necessary download, else nltk can't tokenize
-    nltk.download('punkt')
+    #nltk.download('punkt')
 
     main()
