@@ -70,7 +70,7 @@ def main():
                 lookup = indexMZ
 
             if token in lookup:
-                s = set(t['url_ID'] for t in lookup[token])
+                s = set(t['ur'] for t in lookup[token])
                 docIDs.append(s)
 
         # docIDs = []
@@ -82,7 +82,7 @@ def main():
         #             document = ujson.load(f)
         #             index = document['index']
 
-        #             s.update([t['url_ID'] for t in index[token]])
+        #             s.update([t['ur'] for t in index[token]])
 
         #     docIDs.append(s)
         

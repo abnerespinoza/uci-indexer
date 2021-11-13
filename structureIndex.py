@@ -92,7 +92,7 @@ def first_pass():
             document = ujson.load(f)
 
             tokens = document['contains']
-            guid = document['GUID']
+            guid = document['guid']
 
             for token in tokens:
                 if token in gen_index:
