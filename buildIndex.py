@@ -26,7 +26,7 @@ def savePartialIndex(invertedIndex, filePath):
         # iterate through sorted keys of inverted index
         for token in sorted(invertedIndex):
             # for each token, write in format-- token [Posting]
-            f.write(f'{token} {json.dumps(invertedIndex[token])}')
+            f.write(f'{token} {json.dumps(invertedIndex[token])}\n')
     
 def mergePartialIndices(fileNames):
     # given list of partial indices files, merge into 1 file
@@ -42,18 +42,23 @@ def main():
     folders = listDirNoHidden(DEV_DIRECTORY)
 
     # extracting json files from folders
-    json_files = [] 
+    jsonFiles = [] 
     for folder_name in folders:
-        files = os.listdir('{}/{}'.format(DEV_DIRECTORY, folder_name))  # json files
+        files = os.listdir(os.path.join(DEV_DIRECTORY, folder_name))  # json files
 
         for index, file_path in enumerate(files):
-            files[index] = '{}/{}/{}'.format(DEV_DIRECTORY, folder_name, file_path)
+            files[index] = os.path.join(DEV_DIRECTORY, folder_name, file_path)
 
-        json_files.extend(files)
+        jsonFiles.extend(files)
+    print(f'Found {len(jsonFiles)} files')    
+
+    # create directory to store partial indices
+    if not os.path.exists(PARTIAL_INDEX_DIRECTORY):
+        os.makedirs(PARTIAL_INDEX_DIRECTORY)
 
     # creating lookup for documents, building inverted index
-    for docID, file_path in enumerate(json_files):
-        with open(file_path, 'r') as f:
+    for docID, file_path in enumerate(jsonFiles):
+        with open(file_path, 'r',  encoding="utf-8") as f:
             page = json.load(f)
             docLookup[docID] = page['url']
 
