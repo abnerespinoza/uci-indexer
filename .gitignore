@@ -132,6 +132,7 @@ dmypy.json
 
 # DEV folder
 DEV/
+partial_indices/
 
 # Assignment3 json files
 docLookup.json

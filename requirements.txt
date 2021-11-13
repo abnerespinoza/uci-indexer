@@ -1,2 +1,3 @@
 nltk
 lxml
+beautifulsoup4
