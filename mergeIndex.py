@@ -6,6 +6,7 @@ from buildIndex import PARTIAL_INDEX_FOLDER
 def mergePartialIndices():
     # given list of partial indices files, merge into 1 file
     fileNames = os.listdir(PARTIAL_INDEX_FOLDER)
+    merged = 0
     while len(fileNames) > 1:
         # opens first two files in directory
         f1_path = os.path.join(PARTIAL_INDEX_FOLDER, fileNames[0])
@@ -13,7 +14,7 @@ def mergePartialIndices():
         f1 = open(f1_path)
         f2 = open(f2_path)
         # joined index
-        f3 = open(os.path.join(PARTIAL_INDEX_FOLDER, fileNames[0] +'+'+ fileNames[1]))
+        f3 = open(os.path.join(PARTIAL_INDEX_FOLDER, f'merged{merged}.txt'), 'w')
 
         # cursor to iterate file
         line1 = f1.readline()
@@ -32,13 +33,16 @@ def mergePartialIndices():
                 postings3 = mergePostings(postings1, postings2)
                 f3.write(f'{line1Token} {json.dumps(postings3)}\n')
 
+                line1 = f1.readline()
+                line2 = f2.readline()
+
             #if line1Token < line2Token, increment line1Token
             elif line1Token < line2Token:
-                f3.write(line1 + '\n')
+                f3.write(line1)
                 line1 = f1.readline()
             #else increment line2Token
             else:
-                f3.write(line2 + '\n')
+                f3.write(line2)
                 line2 = f2.readline()
 
         # close files
@@ -49,6 +53,9 @@ def mergePartialIndices():
         # delete previous indices
         os.remove(f1_path)
         os.remove(f2_path)
+        fileNames = os.listdir(PARTIAL_INDEX_FOLDER)
+
+        merged += 1
 
 def mergePostings(postings1, postings2):
     # iterate through list of postings
@@ -70,10 +77,12 @@ def mergePostings(postings1, postings2):
             print('uh oh')
 
     # add leftovers postings
-    if len(postings1) != 0:
-        newPosting += postings1
-    if len(postings2) != 0:
-        newPosting += postings2
+    if p1 < len(postings1):
+        newPosting += postings1[p1:]
+    if p2 < len(postings2):
+        newPosting += postings2[p2:]
+
+    return newPosting
 
 if __name__ == '__main__':
     mergePartialIndices()
