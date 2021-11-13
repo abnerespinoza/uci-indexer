@@ -133,6 +133,9 @@ dmypy.json
 # DEV folder
 DEV/
 
+# Partial indexes
+PARTIALS/
+
 # Assignment3 json files
 docLookup.json
 invertedIndex.json
