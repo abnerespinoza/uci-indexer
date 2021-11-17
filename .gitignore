@@ -138,3 +138,5 @@ partial_indices2/
 # Assignment3 json files
 docLookup.json
 invertedIndex.json
+index2.txt
+seek.json
