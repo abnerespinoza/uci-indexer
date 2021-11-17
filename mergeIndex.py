@@ -1,7 +1,6 @@
 import os
 import json
 
-from buildIndex import PARTIAL_INDEX_FOLDER
 
 def mergePartialIndices():
     # given list of partial indices files, merge into 1 file
@@ -84,5 +83,34 @@ def mergePostings(postings1, postings2):
 
     return newPosting
 
+def createIndexOfIndex():
+    # directory should just contain the final index
+    fileNames = os.listdir(PARTIAL_INDEX_FOLDER)
+    if len(fileNames) != 1:
+        print('Final Index was not created correctly')
+        return
+    # rename index
+    indexName = os.path.join(PARTIAL_INDEX_FOLDER, 'index.txt')
+    os.rename(os.path.join(PARTIAL_INDEX_FOLDER, fileNames[0]), indexName)
+    # iterate through index
+    indexOfIndex = {}
+    with open(indexName, 'r') as f:
+        position = 0
+        key = ''
+        # go through each line
+        for line in f:
+            # get the token 
+            token = line.split()[0]
+            # if detected a new key
+            if token[0] != key:
+                key = token[0]
+                indexOfIndex[key] = position
+            position += len(line)
+
+    with open('seek.json', 'w') as f:
+        json.dump(indexOfIndex, f)
+
 if __name__ == '__main__':
+    PARTIAL_INDEX_FOLDER = 'partial_indices/'
     mergePartialIndices()
+    createIndexOfIndex()
