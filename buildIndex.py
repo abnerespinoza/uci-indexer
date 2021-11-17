@@ -4,7 +4,6 @@ import os
 import json
 import nltk
 import re
-from partA import tokenize_string 
 
 from bs4 import BeautifulSoup
 from nltk.stem.snowball import SnowballStemmer
