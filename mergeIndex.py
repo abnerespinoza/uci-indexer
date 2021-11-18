@@ -1,10 +1,14 @@
+# mergeIndex.py
+
+
 import os
 import json
 
-
+ 
 def mergePartialIndices():
-    # given list of partial indices files, merge into 1 file
+    # list of partial inverted index files 
     fileNames = os.listdir(PARTIAL_INDEX_FOLDER)
+
     merged = 0
     while len(fileNames) > 1:
         # opens first two files in directory
@@ -12,6 +16,7 @@ def mergePartialIndices():
         f2_path = os.path.join(PARTIAL_INDEX_FOLDER, fileNames[1])
         f1 = open(f1_path)
         f2 = open(f2_path)
+
         # joined index
         f3 = open(os.path.join(PARTIAL_INDEX_FOLDER, f'merged{merged}.txt'), 'w')
 
@@ -56,6 +61,7 @@ def mergePartialIndices():
 
         merged += 1
 
+
 def mergePostings(postings1, postings2):
     # iterate through list of postings
     p1 = 0
@@ -83,6 +89,7 @@ def mergePostings(postings1, postings2):
 
     return newPosting
 
+
 def createIndexOfIndex():
     # directory should just contain the final index
     fileNames = os.listdir(PARTIAL_INDEX_FOLDER)
@@ -109,6 +116,7 @@ def createIndexOfIndex():
 
     with open('seek.json', 'w') as f:
         json.dump(indexOfIndex, f)
+
 
 if __name__ == '__main__':
     PARTIAL_INDEX_FOLDER = 'partial_indices/'
