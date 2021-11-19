@@ -1,10 +1,14 @@
+# mergeIndex.py
+
+
 import os
 import json
 
-
+ 
 def mergePartialIndices():
-    # given list of partial indices files, merge into 1 file
+    # list of partial inverted index files 
     fileNames = os.listdir(PARTIAL_INDEX_FOLDER)
+
     merged = 0
     while len(fileNames) > 1:
         # opens first two files in directory
@@ -12,6 +16,7 @@ def mergePartialIndices():
         f2_path = os.path.join(PARTIAL_INDEX_FOLDER, fileNames[1])
         f1 = open(f1_path)
         f2 = open(f2_path)
+
         # joined index
         f3 = open(os.path.join(PARTIAL_INDEX_FOLDER, f'merged{merged}.txt'), 'w')
 
@@ -56,6 +61,7 @@ def mergePartialIndices():
 
         merged += 1
 
+
 def mergePostings(postings1, postings2):
     # iterate through list of postings
     p1 = 0
@@ -64,15 +70,15 @@ def mergePostings(postings1, postings2):
     
     while p1 < len(postings1) and p2 < len(postings2): 
         # posting1 has a smaller docID
-        if postings1[p1]['docID'] < postings2[p2]['docID']:
+        if postings1[p1]['doc'] < postings2[p2]['doc']:
             newPosting.append(postings1[p1])
             p1 += 1
-        # posting2 has a smaller docID
-        elif postings1[p1]['docID'] > postings2[p2]['docID']:
+        # posting2 has a smaller doc
+        elif postings1[p1]['doc'] > postings2[p2]['doc']:
             newPosting.append(postings2[p2])
             p2 += 1
         # should never happen
-        elif postings1[p1]['docID'] == postings2[p2]['docID']:
+        elif postings1[p1]['doc'] == postings2[p2]['doc']:
             print('uh oh')
 
     # add leftovers postings
@@ -82,6 +88,7 @@ def mergePostings(postings1, postings2):
         newPosting += postings2[p2:]
 
     return newPosting
+
 
 def createIndexOfIndex():
     # directory should just contain the final index
@@ -109,6 +116,7 @@ def createIndexOfIndex():
 
     with open('seek.json', 'w') as f:
         json.dump(indexOfIndex, f)
+
 
 if __name__ == '__main__':
     PARTIAL_INDEX_FOLDER = 'partial_indices/'
