@@ -2,8 +2,11 @@
 import json
 import ast
 from os import set_blocking
+import nltk
+from nltk.stem.snowball import SnowballStemmer
 
 from partA import tokenize_string
+from buildIndex import process_text
 
 def mergePostings(postingList): #return array of DocIds where they occur.
     # query = [cristina, lopes]
@@ -37,16 +40,17 @@ def mergePostings(postingList): #return array of DocIds where they occur.
 
     
 if __name__ == '__main__':
-    seek_f = open('seek.json')
+    STEMMER = SnowballStemmer('english')
+    seek_f = open('seek.json', 'r')
     indexOfIndex = json.load(seek_f)
-    docLookup_f = open('docLookup.json')
+    docLookup_f = open('docLookup.json', 'r')
     docLookup = json.load(docLookup_f)
     # prompt user for query
     query = input("Enter a query: ").lower().strip()
     # get query
 
     #make sure alphanum
-    queryArr = tokenize_string(query)
+    queryArr = process_text(query)
     possibleIndexes = "0123456789abcdefghijklmnopqrstuvwxyz"
     # possibly use binary search to find the correct token ex: c[h] we search for the halfway point in the "c" files and check
     # if 2nd character is < > h.
