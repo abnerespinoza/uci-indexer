@@ -27,6 +27,7 @@ def savePartialIndex(invertedIndex, filePath):
             f.write(f'{token} {json.dumps(invertedIndex[token])}\n')
 
 def process_text(text: str, n: int = 10_000_000):
+    STEMMER = SnowballStemmer('english')
     raw_tokens = []
     if len(text) > n:
         split_text = []
@@ -169,7 +170,6 @@ if __name__ == '__main__':
 
     PARTIAL_INDEX_FOLDER = 'partial_indices/'
     # constant, STEMMER object
-    STEMMER = SnowballStemmer('english')
 
     # constant, replacement pairs for regex
     REP = {"'": '', ".": '', ",": ' ', "/": ' '}
