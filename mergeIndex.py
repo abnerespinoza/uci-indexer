@@ -69,16 +69,16 @@ def mergePostings(postings1, postings2):
     newPosting = []
     
     while p1 < len(postings1) and p2 < len(postings2): 
-        # posting1 has a smaller docID
-        if postings1[p1]['docID'] < postings2[p2]['docID']:
+        # posting1 has a smaller dID
+        if postings1[p1]['dID'] < postings2[p2]['dID']:
             newPosting.append(postings1[p1])
             p1 += 1
-        # posting2 has a smaller docID
-        elif postings1[p1]['docID'] > postings2[p2]['docID']:
+        # posting2 has a smaller dID
+        elif postings1[p1]['dID'] > postings2[p2]['dID']:
             newPosting.append(postings2[p2])
             p2 += 1
         # should never happen
-        elif postings1[p1]['docID'] == postings2[p2]['docID']:
+        elif postings1[p1]['dID'] == postings2[p2]['dID']:
             print('uh oh')
 
     # add leftovers postings

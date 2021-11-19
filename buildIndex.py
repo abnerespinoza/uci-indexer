@@ -90,7 +90,7 @@ def main():
 
     # creating lookup for documents, building inverted index
     for docID, file_path in enumerate(jsonFiles):
-        print(docID)    # sanity check
+        # print(docID)    # sanity check
         with open(file_path, 'r',  encoding="utf-8") as f:
             page = json.load(f)
             docLookup[docID] = page['url']
