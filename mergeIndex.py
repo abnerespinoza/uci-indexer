@@ -1,24 +1,23 @@
 # mergeIndex.py
 
-
 import os
 import json
 
  
 def mergePartialIndices():
     # list of partial inverted index files 
-    fileNames = os.listdir(PARTIAL_INDEX_FOLDER)
+    fileNames = os.listdir(PARTIAL_INDICES_DIRECTORY)
 
     merged = 0
     while len(fileNames) > 1:
         # opens first two files in directory
-        f1_path = os.path.join(PARTIAL_INDEX_FOLDER, fileNames[0])
-        f2_path = os.path.join(PARTIAL_INDEX_FOLDER, fileNames[1])
+        f1_path = os.path.join(PARTIAL_INDICES_DIRECTORY, fileNames[0])
+        f2_path = os.path.join(PARTIAL_INDICES_DIRECTORY, fileNames[1])
         f1 = open(f1_path)
         f2 = open(f2_path)
 
         # joined index
-        f3 = open(os.path.join(PARTIAL_INDEX_FOLDER, f'merged{merged}.txt'), 'w')
+        f3 = open(os.path.join(PARTIAL_INDICES_DIRECTORY, f'merged{merged}.txt'), 'w')
 
         # cursor to iterate file
         line1 = f1.readline()
@@ -57,7 +56,7 @@ def mergePartialIndices():
         # delete previous indices
         os.remove(f1_path)
         os.remove(f2_path)
-        fileNames = os.listdir(PARTIAL_INDEX_FOLDER)
+        fileNames = os.listdir(PARTIAL_INDICES_DIRECTORY)
 
         merged += 1
 
@@ -92,23 +91,24 @@ def mergePostings(postings1, postings2):
 
 def createIndexOfIndex():
     # directory should just contain the final index
-    fileNames = os.listdir(PARTIAL_INDEX_FOLDER)
+    fileNames = os.listdir(PARTIAL_INDICES_DIRECTORY)
     if len(fileNames) != 1:
         print('Final Index was not created correctly')
         return
+
     # rename index
-    indexName = os.path.join(PARTIAL_INDEX_FOLDER, 'index.txt')
-    os.rename(os.path.join(PARTIAL_INDEX_FOLDER, fileNames[0]), indexName)
+    indexName = os.path.join(PARTIAL_INDICES_DIRECTORY, 'index.txt')
+    os.rename(os.path.join(PARTIAL_INDICES_DIRECTORY, fileNames[0]), indexName)
+
     # iterate through index
     indexOfIndex = {}
     with open(indexName, 'r') as f:
         position = 0
         key = ''
-        # go through each line
+
         for line in f:
-            # get the token 
             token = line.split()[0]
-            # if detected a new key
+
             if token[0] != key:
                 key = token[0]
                 indexOfIndex[key] = position
@@ -119,6 +119,8 @@ def createIndexOfIndex():
 
 
 if __name__ == '__main__':
-    PARTIAL_INDEX_FOLDER = 'partial_indices/'
+    # partial_indices folder path
+    PARTIAL_INDICES_DIRECTORY = 'partial_indices'
+
     mergePartialIndices()
     createIndexOfIndex()

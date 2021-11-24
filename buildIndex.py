@@ -1,15 +1,15 @@
 # buildIndex.py
 
+import re
 import os
 import json
 import nltk
-import re
 
 from bs4 import BeautifulSoup
 from nltk.stem.snowball import SnowballStemmer
 
-# for loop below (for folder_name in folders) raised an error when hidden files' names
-#   were appended to DEV_DIRECTORY. Eg .DS_STORE
+
+# returns directories of all non-hidden files
 def listDirNoHidden(path):
     f_names = []
     for f in os.listdir(path):
@@ -17,18 +17,18 @@ def listDirNoHidden(path):
             f_names.append(f)
     return f_names
 
-#invertedIndex is dict[{'docID': 3, 'freq': 120}]
+
+# {'docID': x, 'tf-idf': y, 'fields': z}
 def savePartialIndex(invertedIndex, filePath): 
-    print("creating partial index...")
     with open(filePath, 'w') as f:
         # iterate through sorted keys of inverted index
         for token in sorted(invertedIndex):
-            # for each token, write in format-- token [Posting]
             f.write(f'{token} {json.dumps(invertedIndex[token])}\n')
 
+
 def process_text(text: str, n: int = 10_000_000):
-    # constant, STEMMER object
-    STEMMER = SnowballStemmer('english')
+    text = PATTERN.sub(lambda m: REP[re.escape(m.group(0))], text)
+
     raw_tokens = []
     if len(text) > n:
         split_text = []
@@ -45,7 +45,7 @@ def process_text(text: str, n: int = 10_000_000):
     else:
         raw_tokens = nltk.word_tokenize(text)  
 
-    # removing all tokens that are wholly not alphanumeric
+    # removing all tokens that are not alphanumeric
     index = len(raw_tokens) - 1
     while index >= 0:
         if not raw_tokens[index].isalnum():
@@ -63,9 +63,11 @@ def process_text(text: str, n: int = 10_000_000):
 
 def main():
     docLookup = dict()
-    partialInvertedIndex = dict()
+    
     postingCounter = 0
     partialIndexCounter = 0
+    partialInvertedIndex = dict()
+
     # extracting folders from DEV
     folders = listDirNoHidden(DEV_DIRECTORY)
 
@@ -78,15 +80,13 @@ def main():
             files[index] = os.path.join(DEV_DIRECTORY, folder_name, file_path)
 
         jsonFiles.extend(files)
-    print(f'Found {len(jsonFiles)} files')    
 
     # create directory to store partial indices
-    if not os.path.exists(PARTIAL_INDEX_FOLDER):
-        os.makedirs(PARTIAL_INDEX_FOLDER)
+    if not os.path.exists(PARTIAL_INDICES_DIRECTORY):
+        os.makedirs(PARTIAL_INDICES_DIRECTORY)
 
     # creating lookup for documents, building inverted index
     for docID, file_path in enumerate(jsonFiles):
-        print(file_path)
         with open(file_path, 'r',  encoding="utf-8") as f:
             page = json.load(f)
             docLookup[docID] = page['url']
@@ -96,8 +96,6 @@ def main():
 
             # gathering text
             text = soup.get_text()
-            text = PATTERN.sub(lambda m: REP[re.escape(m.group(0))], text)
-            # print(url_ID, len(text))  # debug
 
             # tokenizing
             tokens = process_text(text)
@@ -110,33 +108,38 @@ def main():
                 else:
                     frequencies[token] = 1
 
-
             # searching for important text
             fields = dict()
             for token in frequencies:
                 fields[token] = 0
 
+            num_elements = 0
             tags = ['title', 'b', 'strong', 'h1', 'h2', 'h3']
             for tag in tags:
-                for element in soup.find_all(tag):
+                elements = soup.find_all(tag)
+                for element in elements:
                     text = element.get_text()
                     if text:
-                        text = PATTERN.sub(lambda m: REP[re.escape(m.group(0))], text)
-
                         # tokenizing
                         tokens = process_text(text)
 
                         for token in tokens:
                             if token in fields:
                                 fields[token] += 1
+                num_elements += len(elements) 
+            
+            # normalize
+            if num_elements > 0:
+                for token in fields:
+                    token[fields] /= num_elements
 
             # adding to inverted index
             for token, freq in frequencies.items():
-                # expandable to include fields (tags), positions
+                # expandable to include positions
                 posting = {
-                    'docID': docID,
-                    'freq': freq, 
-                    'fi': fields[token]     # fields
+                    'doc': docID,
+                    'fre': freq, 
+                    'fie': fields[token]    
                 }
 
                 if token in partialInvertedIndex:
@@ -145,11 +148,11 @@ def main():
                     partialInvertedIndex[token] = [posting]
 
                 postingCounter += 1
-                # checks if partialInvertedIndex is > 100,000
-                # after saving file, we need to find the file size.
-                if postingCounter > NUM_ITEMS:
-                    fileName = os.path.join(PARTIAL_INDEX_FOLDER, f'partial_index_{partialIndexCounter}.txt')
+
+                if postingCounter > NUM_POSTINGS:
+                    fileName = os.path.join(PARTIAL_INDICES_DIRECTORY, f'partial_index_{partialIndexCounter}.txt')
                     savePartialIndex(partialInvertedIndex, fileName)
+
                     partialInvertedIndex = dict()
                     partialIndexCounter += 1
                     postingCounter = 0
@@ -161,22 +164,24 @@ def main():
 
 
 if __name__ == '__main__':
-    # constant, file path for DEV folder
+    # DEV folder path
     DEV_DIRECTORY = 'DEV'
-        # constant, file path for RAW INDICES folder
-    RAW_INDICES_DIRECTORY = 'raw_indices'
 
-    # contant, tolerance for number of items per dictionary
-    NUM_ITEMS = 100_000
+    # partial_indices folder path
+    PARTIAL_INDICES_DIRECTORY = 'partial_indices'
 
-    PARTIAL_INDEX_FOLDER = 'partial_indices/'
+    # allowed number of postings per index
+    NUM_POSTINGS = 100_000
 
-    # constant, replacement pairs for regex
+    # replacement pairs for regex
     REP = {"'": '', ".": '', ",": ' ', "/": ' '}
     REP = dict((re.escape(k), v) for k, v in REP.items()) 
     PATTERN = re.compile("|".join(REP.keys()))
 
-    # uncomment if never used nltk - it's necessary download, else nltk can't tokenize
+    # uncomment if you've never used nltk - it's a necessary download, else nltk can't tokenize
     nltk.download('punkt')
+
+    # STEMMER object
+    STEMMER = SnowballStemmer('english')
 
     main()
