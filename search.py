@@ -70,12 +70,14 @@ if __name__ == '__main__':
                     # postings.append(line[len(token) + 1: -2])
 
                     # if word is the same, store posting
+                    print(token)
+                    print(word)
                     if token == word:
                         postings = json.loads(line[len(token) + 1: ])
                         postingsList.append(postings)
                         break
-                    elif token[0] != word[0]:
-                        break
+                    # elif token[0] != word[0]:
+                    #     break
 
                     line = f.readline()
 
