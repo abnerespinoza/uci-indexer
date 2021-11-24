@@ -27,6 +27,14 @@ def savePartialIndex(invertedIndex, filePath):
 
 
 def process_text(text: str, n: int = 10_000_000):
+    # replacement pairs for regex
+    REP = {"'": '', ".": '', ",": ' ', "/": ' '}
+    REP = dict((re.escape(k), v) for k, v in REP.items()) 
+    PATTERN = re.compile("|".join(REP.keys()))
+
+    # STEMMER object
+    STEMMER = SnowballStemmer('english')
+
     text = PATTERN.sub(lambda m: REP[re.escape(m.group(0))], text)
 
     raw_tokens = []
@@ -87,6 +95,10 @@ def main():
 
     # creating lookup for documents, building inverted index
     for docID, file_path in enumerate(jsonFiles):
+        # sanity's sake
+        if (docID % 100) == 0:
+            print(docID)
+
         with open(file_path, 'r',  encoding="utf-8") as f:
             page = json.load(f)
             docLookup[docID] = page['url']
@@ -131,7 +143,7 @@ def main():
             # normalize
             if num_elements > 0:
                 for token in fields:
-                    token[fields] /= num_elements
+                    fields[token] /= num_elements
 
             # adding to inverted index
             for token, freq in frequencies.items():
@@ -157,6 +169,8 @@ def main():
                     partialIndexCounter += 1
                     postingCounter = 0
 
+    fileName = os.path.join(PARTIAL_INDICES_DIRECTORY, f'partial_index_{partialIndexCounter}.txt')
+    savePartialIndex(partialInvertedIndex, fileName)
 
     # save docLookup
     with open('docLookup.json', 'w') as dl:
@@ -173,15 +187,7 @@ if __name__ == '__main__':
     # allowed number of postings per index
     NUM_POSTINGS = 100_000
 
-    # replacement pairs for regex
-    REP = {"'": '', ".": '', ",": ' ', "/": ' '}
-    REP = dict((re.escape(k), v) for k, v in REP.items()) 
-    PATTERN = re.compile("|".join(REP.keys()))
-
     # uncomment if you've never used nltk - it's a necessary download, else nltk can't tokenize
     nltk.download('punkt')
-
-    # STEMMER object
-    STEMMER = SnowballStemmer('english')
 
     main()

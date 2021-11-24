@@ -33,8 +33,6 @@ def mergePostings(postingList):
 
     
 if __name__ == '__main__':
-    STEMMER = SnowballStemmer('english')
-
     seek_f = open('seek.json', 'r')
     indexOfIndex = json.load(seek_f)
 
@@ -42,10 +40,15 @@ if __name__ == '__main__':
     docLookup = json.load(docLookup_f)
 
     while True:
-        query = input("Enter a query: ").lower().strip()
+        query = input("enter a query: ")
 
         t1 = time.time()
-        queryLi = process_text(query)
+        queryLi = process_text(query.lower().strip())
+
+        # removes duplicates
+        seen = set()
+        seen_add = seen.add
+        queryLi = [x for x in queryLi if not (x in seen or seen_add(x))]
 
         possibleIndexes = "0123456789abcdefghijklmnopqrstuvwxyz"
 
@@ -73,9 +76,6 @@ if __name__ == '__main__':
                         break
                     line = f.readline()
 
-                if not line:
-                    print('token not found - {}'.format(word)) 
-
         docIDMatches = mergePostings(postingsList)
 
         urls = []
@@ -83,14 +83,18 @@ if __name__ == '__main__':
             urls.append(docLookup[docId])
 
         t2 = time.time() - t1
-        print('search time (ms): {}'.format(t2 * 1000))
 
         if not urls:
-            print('no results - {}'.format(query))                
+            print('\nno results - {}'.format(query))                
         else:
-            print('top results: ')
+            print('\ntop results: ')
             for i in range(20):
+                if i == len(urls):
+                    break
+
                 if i < 9:
                     print(' {}.  {}'.format(i + 1, urls[i]))
                 else:
                     print('{}.  {}'.format(i + 1, urls[i]))
+
+        print('\nsearch time (ms): {}\n'.format(t2 * 1000))
