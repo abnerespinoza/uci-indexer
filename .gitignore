@@ -129,6 +129,7 @@ dmypy.json
 .pyre/
 
 .DS_STORE
+.zip
 
 # DEV folder
 DEV/

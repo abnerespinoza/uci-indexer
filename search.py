@@ -2,37 +2,50 @@
 
 import json
 import time
+import math
 
 from buildIndex import process_text
 
 
 # returns list of docIDs
-# E.g.
-# query = [cristina, lopes]
-# christina [{doc: 234, fre: 3}, { doc: 400, fre: 2}] ->[234, 400]
-# lopes [{doc: 232, fre: 5}, {doc: 400, fre: 4}, {doc: 623, fre: 1}] ->[232, 400, 623]
 def mergePostings(postingList): 
     if not postingList:
         return []
 
     docIDList = []
     for postings in postingList:
-        individualDocList = []
-        for posting in postings:
-            individualDocList.append(str(posting['doc']))
-        docIDList.append(individualDocList)
+        docIDList.append([str(posting['doc']) for posting in postings])
 
-    docIDList = sorted(docIDList, key = lambda x: len(x))
+    docIDList = sorted(docIDList, key=lambda x: len(x))
 
     while len(docIDList) > 1:
-        # intersection of docIDList[0] and docIDList[1]
-        docIDList[1] = list(set(docIDList[0]) & set(docIDList[1]))
-        docIDList.pop(0)
+        docIDList[0] = list(set(docIDList[0]) & set(docIDList[-1]))
+        docIDList.pop()
 
-    return docIDList[0] 
+    return docIDList[0]
+
+
+# returns list of ranked docIDs
+def rankPostings(postingList): 
+    if not postingList:
+        return []
+
+    ranks = dict()
+    for postings in postingList:
+        idf = math.log10(N / len(postings))
+        for posting in postings:
+            if posting['doc'] in ranks:
+                ranks[posting['doc']] += (posting['tf'] * idf) + posting['fi']
+            else:
+                ranks[posting['doc']] = (posting['tf'] * idf) + posting['fi']
+
+    docIDList = [str(w) for w in sorted(ranks, key=ranks.get, reverse=True)]
+    return docIDList
 
     
 if __name__ == '__main__':
+    N = 55393
+
     with open('index.txt', 'r') as f, open('seek.json', 'r') as seek_f, open('docLookup.json', 'r') as docLookup_f:
         indexOfIndex = json.load(seek_f)
         docLookup = json.load(docLookup_f)
@@ -50,7 +63,7 @@ if __name__ == '__main__':
 
             postingsList = []
             for word in queryLi:
-                if word in indexOfIndex.keys():
+                if word in indexOfIndex:
                     position = indexOfIndex[word]
                     
                     # jump to position in index.txt
@@ -61,7 +74,7 @@ if __name__ == '__main__':
                     postings = json.loads(line[len(token) + 1: ])
                     postingsList.append(postings)
 
-            docIDMatches = mergePostings(postingsList)
+            docIDMatches = rankPostings(postingsList)
 
             urls = []
             for docId in docIDMatches:

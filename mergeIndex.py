@@ -110,13 +110,6 @@ def createIndexOfIndex():
             token = line.split()[0]
             indexOfIndex[token] = position
 
-            if token == 'd':
-                print('d', position)
-                print(indexOfIndex[token])
-            if token == 'doe':
-                print ('does', position)
-                print(indexOfIndex[token])
-
             position = f.tell()
             line = f.readline()
 

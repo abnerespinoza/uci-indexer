@@ -3,6 +3,7 @@
 import re
 import os
 import json
+import math
 import nltk
 
 from bs4 import BeautifulSoup
@@ -120,6 +121,11 @@ def main():
                 else:
                     frequencies[token] = 1
 
+            # calculating tf
+            for token in frequencies:
+                count = frequencies[token]
+                frequencies[token] = 1 + math.log10(count)
+
             # searching for important text
             fields = dict()
             for token in frequencies:
@@ -144,14 +150,14 @@ def main():
             if num_elements > 0:
                 for token in fields:
                     fields[token] /= num_elements
-
+ 
             # adding to inverted index
             for token, freq in frequencies.items():
                 # expandable to include positions
                 posting = {
                     'doc': docID,
-                    'fre': freq, 
-                    'fie': fields[token]    
+                    'tf' : freq, 
+                    'fi' : fields[token]    
                 }
 
                 if token in partialInvertedIndex:
