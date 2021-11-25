@@ -33,7 +33,7 @@ def mergePostings(postingList):
 
     
 if __name__ == '__main__':
-    with open('seek.json', 'r') as seek_f, open('docLookup.json', 'r') as docLookup_f:
+    with open('index.txt', 'r') as f, open('seek.json', 'r') as seek_f, open('docLookup.json', 'r') as docLookup_f:
         indexOfIndex = json.load(seek_f)
         docLookup = json.load(docLookup_f)
 
@@ -48,22 +48,16 @@ if __name__ == '__main__':
             seen_add = seen.add
             queryLi = [x for x in queryLi if not (x in seen or seen_add(x))]
 
-            possibleIndexes = "0123456789abcdefghijklmnopqrstuvwxyz"
-
-            # use binary search to find the token
-            # may need to track EOF index for Z case
-
             postingsList = []
             for word in queryLi:
                 if word in indexOfIndex.keys():
                     position = indexOfIndex[word]
                     
                     # jump to position in index.txt
-                    f = open('index.txt', 'r')
                     f.seek(position)
                     line = f.readline()
 
-                    token = line.split()[0]
+                    token = line[:len(word)]
                     postings = json.loads(line[len(token) + 1: ])
                     postingsList.append(postings)
 
