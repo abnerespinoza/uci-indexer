@@ -102,16 +102,20 @@ def createIndexOfIndex():
 
     # iterate through index
     indexOfIndex = {}
-    with open('index.txt', 'r') as f:
+    with open(indexName, 'r') as f:
         position = 0
-        key = ''
 
         line = '?'
         while line:
             token = line.split()[0]
-            if token[0] != key:
-                key = token[0]
-                indexOfIndex[key] = position
+            indexOfIndex[token] = position
+
+            if token == 'd':
+                print('d', position)
+                print(indexOfIndex[token])
+            if token == 'doe':
+                print ('does', position)
+                print(indexOfIndex[token])
 
             position = f.tell()
             line = f.readline()

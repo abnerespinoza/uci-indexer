@@ -33,71 +33,59 @@ def mergePostings(postingList):
 
     
 if __name__ == '__main__':
-    seek_f = open('seek.json', 'r')
-    indexOfIndex = json.load(seek_f)
+    with open('seek.json', 'r') as seek_f, open('docLookup.json', 'r') as docLookup_f:
+        indexOfIndex = json.load(seek_f)
+        docLookup = json.load(docLookup_f)
 
-    docLookup_f = open('docLookup.json', 'r')
-    docLookup = json.load(docLookup_f)
+        while True:
+            query = input("enter a query: ")
 
-    while True:
-        query = input("enter a query: ")
+            t1 = time.time()
+            queryLi = process_text(query)
 
-        t1 = time.time()
-        queryLi = process_text(query.lower().strip())
+            # removes duplicates
+            seen = set()
+            seen_add = seen.add
+            queryLi = [x for x in queryLi if not (x in seen or seen_add(x))]
 
-        # removes duplicates
-        seen = set()
-        seen_add = seen.add
-        queryLi = [x for x in queryLi if not (x in seen or seen_add(x))]
+            possibleIndexes = "0123456789abcdefghijklmnopqrstuvwxyz"
 
-        possibleIndexes = "0123456789abcdefghijklmnopqrstuvwxyz"
+            # use binary search to find the token
+            # may need to track EOF index for Z case
 
-        # use binary search to find the token
-        # may need to track EOF index for Z case
-
-        postingsList = []
-        for word in queryLi:
-            if word[0] in indexOfIndex.keys():
-                position = indexOfIndex[word[0]]
-                
-                # jump to position in index.txt
-                f = open('index.txt', 'r')
-                f.seek(position)
-                line = f.readline()
-
-                while line:
-                    token = line.split()[0]
-                    # postings.append(line[len(token) + 1: -2])
-
-                    # if word is the same, store posting
-                    if token == word:
-                        postings = json.loads(line[len(token) + 1: ])
-                        postingsList.append(postings)
-                        break
-                    elif token[0] != word[0]:
-                        break
-
+            postingsList = []
+            for word in queryLi:
+                if word in indexOfIndex.keys():
+                    position = indexOfIndex[word]
+                    
+                    # jump to position in index.txt
+                    f = open('index.txt', 'r')
+                    f.seek(position)
                     line = f.readline()
 
-        docIDMatches = mergePostings(postingsList)
+                    token = line.split()[0]
+                    postings = json.loads(line[len(token) + 1: ])
+                    postingsList.append(postings)
 
-        urls = []
-        for docId in docIDMatches:
-            urls.append(docLookup[docId])
+            docIDMatches = mergePostings(postingsList)
 
-        t2 = time.time() - t1
+            urls = []
+            for docId in docIDMatches:
+                urls.append(docLookup[docId])
 
-        if not urls:
-            print('\nno results - {}'.format(query))                
-        else:
-            print('\ntop results: ')
-            for i in range(20):
-                if i == len(urls):
-                    break
+            t2 = time.time() - t1
 
-                if i < 9:
-                    print(' {}.  {}'.format(i + 1, urls[i]))
-                else:
-                    print('{}.  {}'.format(i + 1, urls[i]))
+            if not urls:
+                print('\nno results - {}'.format(query))                
+            else:
+                print('\ntop results: ')
+                for i in range(20):
+                    if i == len(urls):
+                        break
 
-        print('\nsearch time (ms): {}\n'.format(t2 * 1000))
+                    if i < 9:
+                        print(' {}.  {}'.format(i + 1, urls[i]))
+                    else:
+                        print('{}.  {}'.format(i + 1, urls[i]))
+
+            print('\nsearch time (ms): {}\n'.format(t2 * 1000))
