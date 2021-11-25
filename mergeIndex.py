@@ -93,7 +93,7 @@ def createIndexOfIndex():
     # directory should just contain the final index
     fileNames = os.listdir(PARTIAL_INDICES_DIRECTORY)
     if len(fileNames) != 1:
-        print('Final Index was not created correctly')
+        print('final index was not created correctly')
         return
 
     # rename index
@@ -102,17 +102,19 @@ def createIndexOfIndex():
 
     # iterate through index
     indexOfIndex = {}
-    with open(indexName, 'r') as f:
+    with open('index.txt', 'r') as f:
         position = 0
         key = ''
 
-        for line in f:
+        line = '?'
+        while line:
             token = line.split()[0]
-
             if token[0] != key:
                 key = token[0]
                 indexOfIndex[key] = position
-            position += len(line)
+
+            position = f.tell()
+            line = f.readline()
 
     with open('seek.json', 'w') as f:
         json.dump(indexOfIndex, f)

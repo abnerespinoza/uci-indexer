@@ -74,8 +74,8 @@ if __name__ == '__main__':
                         postings = json.loads(line[len(token) + 1: ])
                         postingsList.append(postings)
                         break
-                    # elif token[0] != word[0]:
-                    #     break
+                    elif token[0] != word[0]:
+                        break
 
                     line = f.readline()
 
