@@ -1,1 +1,20 @@
 # cs121A3
+
+## create a virtual environment
+```
+python3 -m venv env
+source env/bin/activate
+```
+
+## Create partial indices in /partial_indices
+```
+python3 buildIndex.py
+```
+## Merge partial indices
+```
+python3 mergeIndex.py
+```
+## Move index.py to outer directory and run search engine
+```
+python3 search.py
+```
