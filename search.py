@@ -7,6 +7,18 @@ import math
 from buildIndex import process_text
 
 
+def length_normalize(vector):
+    length = 0
+    for item in vector:
+        length += pow(item, 2)
+    length = math.sqrt(length)
+
+    for index, item in enumerate(vector):
+        vector[index] = item / length
+
+    return vector
+
+
 # returns list of docIDs
 def mergePostings(postingList): 
     if not postingList:
@@ -32,12 +44,11 @@ def rankPostings(postingList):
 
     ranks = dict()
     for postings in postingList:
-        idf = math.log10(N / len(postings))
         for posting in postings:
             if posting['doc'] in ranks:
-                ranks[posting['doc']] += (posting['tf'] * idf) + posting['fi']
+                ranks[posting['doc']] += (posting['tfidf']) + posting['fi']
             else:
-                ranks[posting['doc']] = (posting['tf'] * idf) + posting['fi']
+                ranks[posting['doc']] = (posting['tfidf']) + posting['fi']
 
     docIDList = [str(w) for w in sorted(ranks, key=ranks.get, reverse=True)]
     return docIDList
@@ -56,12 +67,21 @@ if __name__ == '__main__':
             t1 = time.time()
             queryLi = process_text(query)
 
+            qfrequencies = dict()
+            for token in queryLi:
+                if token in qfrequencies:
+                    qfrequencies[token] += 1
+                else:
+                    qfrequencies[token] = 1
+
+            qvector = qfrequencies.values()
+
             # removes duplicates
             seen = set()
             seen_add = seen.add
             queryLi = [x for x in queryLi if not (x in seen or seen_add(x))]
 
-            postingsList = []
+            postingList = []
             for word in queryLi:
                 if word in indexOfIndex:
                     position = indexOfIndex[word]
@@ -70,11 +90,10 @@ if __name__ == '__main__':
                     f.seek(position)
                     line = f.readline()
 
-                    token = line[:len(word)]
-                    postings = json.loads(line[len(token) + 1: ])
-                    postingsList.append(postings)
+                    postings = json.loads(line[len(word) + 1: ])
+                    postingList.append(postings)
 
-            docIDMatches = rankPostings(postingsList)
+            docIDMatches = rankPostings(postingList)
 
             urls = []
             for docId in docIDMatches:

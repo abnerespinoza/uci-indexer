@@ -129,16 +129,19 @@ dmypy.json
 .pyre/
 
 .DS_STORE
-.zip
 
 # DEV folder
 DEV/
 partial_indices/
-partial_indices2/
 
 # Assignment3 json files
 docLookup.json
-invertedIndex.json
-index2.txt
-index.txt
 seek.json
+
+index.txt
+t_index.txt
+
+index.txt.zip
+t_index.txt.zip
+
+partial_indices.zip

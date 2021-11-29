@@ -2,6 +2,7 @@
 
 import os
 import json
+import math
 
  
 def mergePartialIndices():
@@ -59,6 +60,16 @@ def mergePartialIndices():
         fileNames = os.listdir(PARTIAL_INDICES_DIRECTORY)
 
         merged += 1
+    
+    # directory should just contain the final index
+    fileNames = os.listdir(PARTIAL_INDICES_DIRECTORY)
+    if len(fileNames) != 1:
+        print('final index was not created correctly')
+        return
+
+    # rename index
+    os.rename(os.path.join(PARTIAL_INDICES_DIRECTORY, fileNames[0]), T_INDEX_FILE)
+    os.rmdir(PARTIAL_INDICES_DIRECTORY)
 
 
 def mergePostings(postings1, postings2):
@@ -89,20 +100,26 @@ def mergePostings(postings1, postings2):
     return newPosting
 
 
+def addTFIDF():
+    with open(T_INDEX_FILE, 'r') as t, open(INDEX_FILE, 'w') as f:
+        for line in t:
+            text = line.split()
+            token = text[0]
+
+            postings = json.loads(line[len(token) + 1: ])
+
+            idf = math.log10(N / len(postings))
+            for posting in postings:
+                posting['tfidf'] = posting['tf'] * idf
+                del posting['tf']
+            
+            f.write(f'{token} {json.dumps(postings)}\n')
+
+
 def createIndexOfIndex():
-    # directory should just contain the final index
-    fileNames = os.listdir(PARTIAL_INDICES_DIRECTORY)
-    if len(fileNames) != 1:
-        print('final index was not created correctly')
-        return
-
-    # rename index
-    indexName = os.path.join(PARTIAL_INDICES_DIRECTORY, 'index.txt')
-    os.rename(os.path.join(PARTIAL_INDICES_DIRECTORY, fileNames[0]), indexName)
-
     # iterate through index
     indexOfIndex = {}
-    with open(indexName, 'r') as f:
+    with open(INDEX_FILE, 'r') as f:
         position = 0
 
         line = '?'
@@ -113,13 +130,20 @@ def createIndexOfIndex():
             position = f.tell()
             line = f.readline()
 
+        del indexOfIndex['?']
+
     with open('seek.json', 'w') as f:
         json.dump(indexOfIndex, f)
 
 
 if __name__ == '__main__':
     # partial_indices folder path
-    PARTIAL_INDICES_DIRECTORY = 'partial_indices'
+    PARTIAL_INDICES_DIRECTORY = 'partial_indices/'
+    T_INDEX_FILE = 't_index.txt'
+    INDEX_FILE = 'index.txt'
+
+    N = 55393
 
     mergePartialIndices()
+    addTFIDF()
     createIndexOfIndex()

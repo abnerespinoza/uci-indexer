@@ -131,7 +131,6 @@ def main():
             for token in frequencies:
                 fields[token] = 0
 
-            num_elements = 0
             tags = ['title', 'b', 'strong', 'h1', 'h2', 'h3']
             for tag in tags:
                 elements = soup.find_all(tag)
@@ -144,12 +143,15 @@ def main():
                         for token in tokens:
                             if token in fields:
                                 fields[token] += 1
-                num_elements += len(elements) 
             
-            # normalize
-            if num_elements > 0:
-                for token in fields:
-                    fields[token] /= num_elements
+            # log normalize
+            for token in fields:
+                if fields[token] == 0:
+                    fields[token] = 1
+                elif fields[token] == 1:
+                    fields[token] = 1.2
+                else:
+                    fields[token] = 1 + math.log10(fields[token])
  
             # adding to inverted index
             for token, freq in frequencies.items():
