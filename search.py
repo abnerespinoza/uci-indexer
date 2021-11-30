@@ -52,10 +52,8 @@ def rankPostings(postingList):
     docIDList = [str(w) for w in sorted(ranks, key=ranks.get, reverse=True)]
     return docIDList
 
-    
-if __name__ == '__main__':
-    N = 55393
 
+def main():
     with open('index.txt', 'r') as f, open('seek.json', 'r') as seek_f, open('docLookup.json', 'r') as docLookup_f:
         indexOfIndex = json.load(seek_f)
         docLookup = json.load(docLookup_f)
@@ -156,3 +154,9 @@ if __name__ == '__main__':
                         print('{}.  {}'.format(i + 1, urls[i]))
 
             print('\nsearch time (ms): {}\n'.format(t2 * 1000))
+
+    
+if __name__ == '__main__':
+    N = 55393
+
+    main()
