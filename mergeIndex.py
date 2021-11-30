@@ -146,6 +146,6 @@ if __name__ == '__main__':
 
     N = 55393
 
-    # mergePartialIndices()
+    mergePartialIndices()
     addTFIDF()
     createIndexOfIndex()
