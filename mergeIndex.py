@@ -110,10 +110,12 @@ def addTFIDF():
 
             idf = math.log10(N / len(postings))
             for posting in postings:
-                posting['tfidf'] = posting['tf'] * idf
+                posting['tfidf'] = round(posting['tf'] * idf, 5)
                 del posting['tf']
             
             f.write(f'{token} {json.dumps(postings)}\n')
+            
+    os.remove(T_INDEX_FILE)
 
 
 def createIndexOfIndex():
