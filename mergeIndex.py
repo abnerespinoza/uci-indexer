@@ -3,6 +3,7 @@
 import os
 import json
 import math
+import zipfile
 
  
 def mergePartialIndices():
@@ -115,6 +116,8 @@ def addTFIDF():
             
             f.write(f'{token} {json.dumps(postings)}\n')
 
+    with zipfile.ZipFile('t_index.txt.zip', 'w') as z:
+         z.write(T_INDEX_FILE)
     os.remove(T_INDEX_FILE)
 
 
