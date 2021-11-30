@@ -46,9 +46,9 @@ def rankPostings(postingList):
     for postings in postingList:
         for posting in postings:
             if posting['doc'] in ranks:
-                ranks[posting['doc']] += (posting['tfidf']) + posting['fi']
+                ranks[posting['doc']] += posting['score']
             else:
-                ranks[posting['doc']] = (posting['tfidf']) + posting['fi']
+                ranks[posting['doc']] = posting['score']
 
     docIDList = [str(w) for w in sorted(ranks, key=ranks.get, reverse=True)]
     return docIDList
@@ -66,15 +66,6 @@ if __name__ == '__main__':
 
             t1 = time.time()
             queryLi = process_text(query)
-
-            qfrequencies = dict()
-            for token in queryLi:
-                if token in qfrequencies:
-                    qfrequencies[token] += 1
-                else:
-                    qfrequencies[token] = 1
-
-            qvector = qfrequencies.values()
 
             # removes duplicates
             seen = set()

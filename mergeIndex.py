@@ -3,6 +3,7 @@
 import os
 import json
 import math
+import zipfile
 
  
 def mergePartialIndices():
@@ -110,11 +111,16 @@ def addTFIDF():
 
             idf = math.log10(N / len(postings))
             for posting in postings:
-                posting['tfidf'] = round(posting['tf'] * idf, 5)
+                tfidf = round(posting['tf'] * idf, 5)
+                posting['score'] = tfidf * posting['fi']
+
                 del posting['tf']
+                del posting['fi']
             
             f.write(f'{token} {json.dumps(postings)}\n')
-            
+    
+    with zipfile.ZipFile('t_index.txt.zip', 'w') as z:
+        z.write(T_INDEX_FILE)
     os.remove(T_INDEX_FILE)
 
 
