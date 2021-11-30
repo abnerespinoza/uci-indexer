@@ -21,7 +21,7 @@ def listDirNoHidden(path):
 
 # {'docID': x, 'tf-idf': y, 'fields': z}
 def savePartialIndex(invertedIndex, filePath): 
-    with open(filePath, 'w') as f:
+    with open(filePath, 'w', encoding='utf-8') as f:
         # iterate through sorted keys of inverted index
         for token in sorted(invertedIndex):
             f.write(f'{token} {json.dumps(invertedIndex[token])}\n')
