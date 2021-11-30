@@ -20,12 +20,12 @@ def length_normalize(vector):
 
 
 # returns list of docIDs
-def mergePostings(postingList): 
-    if not postingList:
+def mergePostings(postings): 
+    if not postings:
         return []
 
     docIDList = []
-    for postings in postingList:
+    for postings in postings:
         docIDList.append([str(posting['doc']) for posting in postings])
 
     docIDList = sorted(docIDList, key=lambda x: len(x))
@@ -38,12 +38,12 @@ def mergePostings(postingList):
 
 
 # returns list of ranked docIDs
-def rankPostings(postingList): 
-    if not postingList:
+def rankPostings(postings): 
+    if not postings:
         return []
 
     ranks = dict()
-    for postings in postingList:
+    for postings in postings:
         for posting in postings:
             if posting['doc'] in ranks:
                 ranks[posting['doc']] += posting['score']
@@ -53,10 +53,8 @@ def rankPostings(postingList):
     docIDList = [str(w) for w in sorted(ranks, key=ranks.get, reverse=True)]
     return docIDList
 
-    
-if __name__ == '__main__':
-    N = 55393
 
+def main():
     with open('index.txt', 'r') as f, open('seek.json', 'r') as seek_f, open('docLookup.json', 'r') as docLookup_f:
         indexOfIndex = json.load(seek_f)
         docLookup = json.load(docLookup_f)
@@ -72,7 +70,7 @@ if __name__ == '__main__':
             seen_add = seen.add
             queryLi = [x for x in queryLi if not (x in seen or seen_add(x))]
 
-            postingList = []
+            postingsList = []
             for word in queryLi:
                 if word in indexOfIndex:
                     position = indexOfIndex[word]
@@ -82,9 +80,9 @@ if __name__ == '__main__':
                     line = f.readline()
 
                     postings = json.loads(line[len(word) + 1: ])
-                    postingList.append(postings)
+                    postingsList.append(postings)
 
-            docIDMatches = rankPostings(postingList)
+            docIDMatches = rankPostings(postingsList)
 
             urls = []
             for docId in docIDMatches:
@@ -106,3 +104,9 @@ if __name__ == '__main__':
                         print('{}.  {}'.format(i + 1, urls[i]))
 
             print('\nsearch time (ms): {}\n'.format(t2 * 1000))
+
+    
+if __name__ == '__main__':
+    N = 55393
+
+    main()
