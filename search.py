@@ -19,13 +19,14 @@ def length_normalize(vector):
     return vector
 
 
+# For milestone 2 only
 # returns list of docIDs
-def mergePostings(postings): 
-    if not postings:
+def mergePostings(allPostings): 
+    if not allPostings:
         return []
 
     docIDList = []
-    for postings in postings:
+    for postings in allPostings:
         docIDList.append([str(posting['doc']) for posting in postings])
 
     docIDList = sorted(docIDList, key=lambda x: len(x))
@@ -36,15 +37,15 @@ def mergePostings(postings):
 
     return docIDList[0]
 
-
+# for final
 # returns list of ranked docIDs
-def rankPostings(postings): 
-    if not postings:
+def rankPostings(allPostings): 
+    if not allPostings:
         return []
 
     ranks = dict()
-    for postings in postings:
-        for posting in postings:
+    for postingsForToken in allPostings:
+        for posting in postingsForToken:
             if posting['doc'] in ranks:
                 ranks[posting['doc']] += posting['score']
             else:
