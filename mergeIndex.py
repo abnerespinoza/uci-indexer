@@ -5,6 +5,78 @@ import json
 import math
 import zipfile
 
+from buildIndex import savePartialIndex
+
+
+def processAnchorPageRank():
+    anchorLookup = None
+    processedPageRankLookup = dict()
+
+    li_rm = []  # list of tokens to remove from anchorLookup
+
+    with open('docLookup.json', 'r') as dl, open('anchorLookup.json', 'r') as al, open('pageRankLookup.json', 'r') as prl:
+        docLookup = json.load(dl)
+    
+        invertedDocLookup = dict()
+        for key, value in docLookup.items():
+            invertedDocLookup[value] = key
+
+        anchorLookup = json.load(al)
+        for key, value in anchorLookup.items():
+            docs = []
+            for url in value:
+                if url in invertedDocLookup:
+                    docs.append(invertedDocLookup[url])
+                
+            # calculating frequencies
+            frequencies = dict()
+            for docID in docs:
+                if docID in frequencies:
+                    frequencies[docID] += 1
+                else:
+                    frequencies[docID] = 1
+
+            # calculating tf
+            for docID in frequencies:
+                count = frequencies[docID]
+                frequencies[docID] = 1 + math.log10(count)
+
+            postings = []
+            for docID, freq in frequencies.items():
+                K = len(invertedDocLookup)
+                idf = math.log10(K / len(frequencies))
+
+                posting = {
+                    'doc': docID,
+                    'tfidf' : round(freq * idf, 5)
+                }
+                postings.append(posting)
+
+            anchorLookup[key] = postings
+            if not postings:
+                li_rm.append(key)
+        
+        pageRankLookup = json.load(prl)
+        for url, value in pageRankLookup.items():
+            if url in invertedDocLookup:
+                processedPageRankLookup[invertedDocLookup[url]] = value
+    
+    for key in li_rm:
+        del anchorLookup[key]
+    
+    for key, value in processedPageRankLookup.items():
+        if value == 1:
+            processedPageRankLookup[key] = 1.2
+        else:
+            processedPageRankLookup[key] = 1 + math.log10(value)
+        
+    savePartialIndex(anchorLookup, 'anchorIndex.txt')
+    with open('pagerank.json', 'w') as prl:
+        json.dump(processedPageRankLookup, prl)
+    
+    os.remove('anchorLookup.json')
+    os.remove('pageRankLookup.json')
+
  
 def mergePartialIndices():
     # list of partial inverted index files 
@@ -101,8 +173,10 @@ def mergePostings(postings1, postings2):
     return newPosting
 
 
-def addTFIDF():
-    with open(T_INDEX_FILE, 'r') as t, open(INDEX_FILE, 'w') as f:
+def addScore():
+    with open(T_INDEX_FILE, 'r') as t, open(INDEX_FILE, 'w') as f, open('pagerank.json', 'r') as pr:
+        pagerank = json.load(pr)
+
         for line in t:
             text = line.split()
             token = text[0]
@@ -111,8 +185,18 @@ def addTFIDF():
 
             idf = math.log10(N / len(postings))
             for posting in postings:
+                # page rank
+                pr = 1
+                if str(posting['doc']) in pagerank:
+                    pr = pagerank[str(posting['doc'])]
+
+                # two gram
+                tg = 1
+                if '_' in token:
+                    tg = 2
+                
                 tfidf = round(posting['tf'] * idf, 5)
-                posting['score'] = tfidf * posting['fi']
+                posting['score'] = tfidf * posting['fi'] * pr * tg
 
                 del posting['tf']
                 del posting['fi']
@@ -152,6 +236,7 @@ if __name__ == '__main__':
 
     N = 55393
 
+    processAnchorPageRank()
     mergePartialIndices()
-    addTFIDF()
+    addScore()
     createIndexOfIndex()
