@@ -55,6 +55,50 @@ def rankPostings(allPostings):
     return docIDList
 
 
+def searchURLs(searchQuery: str):
+    with open('index.txt', 'r') as f, open('seek.json', 'r') as seek_f, open('docLookup.json', 'r') as docLookup_f:
+        res = {}
+        res['searchQuery'] = searchQuery
+        indexOfIndex = json.load(seek_f)
+        docLookup = json.load(docLookup_f)
+
+        t1 = time.time()
+        queryLi = process_text(searchQuery)
+
+        # removes duplicates
+        seen = set()
+        seen_add = seen.add
+        queryLi = [x for x in queryLi if not (x in seen or seen_add(x))]
+
+        postingsList = []
+        for word in queryLi:
+            if word in indexOfIndex:
+                position = indexOfIndex[word]
+                    
+                # jump to position in index.txt
+                f.seek(position)
+                line = f.readline()
+
+                postings = json.loads(line[len(word) + 1: ])
+                postingsList.append(postings)
+
+        docIDMatches = rankPostings(postingsList)
+
+        urls = []
+        for docId in docIDMatches:
+            urls.append(docLookup[docId])
+
+        t2 = time.time() - t1
+
+        top20Urls = urls[:20]
+        t2 = t2 * 1000
+        res = {
+            'urls' : top20Urls,
+            'time' : t2,
+            'searchQuery': searchQuery
+        }
+        return res
+
 def main():
     with open('index.txt', 'r') as f, open('seek.json', 'r') as seek_f, open('docLookup.json', 'r') as docLookup_f:
         indexOfIndex = json.load(seek_f)
