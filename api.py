@@ -1,6 +1,9 @@
 from flask import Flask, request
 from search import searchURLs
+from flask_cors import CORS #comment this on deployment
+
 app = Flask(__name__)
+CORS(app) #comment this on deployment
 app.config["DEBUG"] = True
 
 @app.route('/search', methods=['GET'])
