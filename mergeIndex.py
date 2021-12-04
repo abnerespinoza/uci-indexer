@@ -87,11 +87,11 @@ def mergePartialIndices():
         # opens first two files in directory
         f1_path = os.path.join(PARTIAL_INDICES_DIRECTORY, fileNames[0])
         f2_path = os.path.join(PARTIAL_INDICES_DIRECTORY, fileNames[1])
-        f1 = open(f1_path)
-        f2 = open(f2_path)
+        f1 = open(f1_path, encoding= "utf-8")
+        f2 = open(f2_path, encoding= "utf-8")
 
         # joined index
-        f3 = open(os.path.join(PARTIAL_INDICES_DIRECTORY, f'merged{merged}.txt'), 'w')
+        f3 = open(os.path.join(PARTIAL_INDICES_DIRECTORY, f'merged{merged}.txt'), 'w',encoding= "utf-8")
 
         # cursor to iterate file
         line1 = f1.readline()
