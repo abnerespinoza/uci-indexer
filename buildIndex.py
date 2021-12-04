@@ -18,7 +18,7 @@ def listDirNoHidden(path):
         if not f.startswith('.'):
             f_names.append(f)
     return f_names
-
+ 
 
 # {'docID': x, 'tf-idf': y, 'fields': z}
 def savePartialIndex(invertedIndex, filePath): 
