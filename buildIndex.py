@@ -6,6 +6,7 @@ import json
 import math
 import nltk
 
+from nltk.util import ngrams
 from bs4 import BeautifulSoup
 from nltk.stem.snowball import SnowballStemmer
 
@@ -17,7 +18,7 @@ def listDirNoHidden(path):
         if not f.startswith('.'):
             f_names.append(f)
     return f_names
-
+ 
 
 # {'docID': x, 'tf-idf': y, 'fields': z}
 def savePartialIndex(invertedIndex, filePath): 
@@ -25,6 +26,12 @@ def savePartialIndex(invertedIndex, filePath):
         # iterate through sorted keys of inverted index
         for token in sorted(invertedIndex):
             f.write(f'{token} {json.dumps(invertedIndex[token])}\n')
+
+
+def get_twograms(tokens):
+    twograms = ngrams(tokens, 2)
+    twograms = ['_'.join(grams) for grams in twograms]
+    return twograms
 
 
 def process_text(text: str, n: int = 10_000_000):
@@ -67,11 +74,16 @@ def process_text(text: str, n: int = 10_000_000):
         if token != '?':
             tokens.append(STEMMER.stem(token))
 
+    twograms = get_twograms(tokens)
+    tokens.extend(twograms)
+
     return tokens
 
 
 def main():
     docLookup = dict()
+    anchorLookup = dict()
+    pageRankLookup = dict()
     
     postingCounter = 0
     partialIndexCounter = 0
@@ -144,7 +156,28 @@ def main():
                             if token in fields:
                                 fields[token] += 1
             
-            # log normalize
+            # indexing anchor text, implementing pagerank
+            for element in soup.find_all('a', href=True):
+                url = element['href']
+                text = element.get_text()
+                if text:
+                    # tokenizing
+                    tokens = process_text(text)
+
+                    # indexing anchor text
+                    if token in anchorLookup:
+                        anchorLookup[token].append(url)
+                    else:
+                        anchorLookup[token] = [url]
+                
+                # implementing page rank
+                if url != page['url']:
+                    if url in pageRankLookup:
+                        pageRankLookup[url] += 1
+                    else:
+                        pageRankLookup[url] = 1
+
+            # log normalize fields
             for token in fields:
                 if fields[token] == 0:
                     fields[token] = 1
@@ -180,9 +213,11 @@ def main():
     fileName = os.path.join(PARTIAL_INDICES_DIRECTORY, f'partial_index_{partialIndexCounter}.txt')
     savePartialIndex(partialInvertedIndex, fileName)
 
-    # save docLookup
-    with open('docLookup.json', 'w') as dl:
+    # save docLookup, anchorLookup
+    with open('docLookup.json', 'w') as dl, open('anchorLookup.json', 'w') as al, open('pageRankLookup.json', 'w') as prl:
         json.dump(docLookup, dl)
+        json.dump(anchorLookup, al)
+        json.dump(pageRankLookup, prl)
 
 
 if __name__ == '__main__':
