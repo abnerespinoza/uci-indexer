@@ -222,7 +222,7 @@ def main():
 
 if __name__ == '__main__':
     # DEV folder path
-    DEV_DIRECTORY = 'DEV'
+    DEV_DIRECTORY = 'DEV_no_dups'
 
     # partial_indices folder path
     PARTIAL_INDICES_DIRECTORY = 'partial_indices'
