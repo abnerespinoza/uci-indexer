@@ -1,4 +1,4 @@
-# cs121A3
+# UCI Indexer/Seach Engine
 
 crawler: https://github.com/abnerespinoza/uci-crawler <br>
 web application: https://github.com/Edwu29/cs121-search-engine-web
